@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Console {
@@ -11,7 +10,8 @@ public class Console {
 
     try {
       return option = this.clientInput.nextInt();
-    } catch (InputMismatchException e) {
+    } catch (Exception e) {
+      this.clientInput.next();
       return option;
     }
   }
