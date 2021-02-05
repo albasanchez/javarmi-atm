@@ -1,16 +1,21 @@
+import java.util.*;
 public class Form {
   private Console console = new Console();
   private RMIStub stub = new RMIStub();
   private Client client = new Client();
 
-  public boolean checkDocumentIDForm(){
+  public void getUserDocumentID(){
     console.clearConsole();
-    System.out.println("UCAB ATM (RPC/RMI) - Verificación de usuario");
+    System.out.println("UCAB ATM (RPC/RMI) - Documento de identidad del usuario");
     System.out.println();
     System.out.print("Introduzca su documento de identidad: ");
 
     String documentID = console.getInputString();
     client.setDocumentID(documentID);
+  }
+
+  private boolean checkDocumentIDForm(){
+    String documentID = client.getDocumentID();
     boolean response = false;
 
     try {
@@ -23,7 +28,7 @@ public class Form {
     return response;
   }
 
-  public boolean registerClientForm(){
+  private boolean registerClientForm(){
     console.clearConsole();
     System.out.println("UCAB ATM (RPC/RMI) - Registro de nuevo usuario");
     System.out.println();
@@ -50,7 +55,7 @@ public class Form {
     return response;
   }
 
-  public boolean checkMaxAccountsForm(){
+  private boolean checkMaxAccountsForm(){
     String documentID = client.getDocumentID();
     boolean response = false;
 
@@ -87,7 +92,7 @@ public class Form {
     return response;
   }
 
-  public void intialDepositForm(){
+  private void intialDepositForm(){
     console.clearConsole();
     System.out.println("UCAB ATM (RPC/RMI) - Depósito inicial para nueva cuenta");
     System.out.println();
@@ -113,6 +118,59 @@ public class Form {
     System.out.println();
   }
 
+  public void readUsersAccountsForm(){
+    console.clearConsole();
+    System.out.println("UCAB ATM (RPC/RMI) - Cuentas del usuario");
+    System.out.println();
+
+    String documentID = client.getDocumentID();
+    List<String> accounts = new ArrayList<String>();
+
+    try {
+      accounts = stub.getRMIStub().getUserAccounts(documentID);
+    } catch (Exception e) {
+      System.err.println("ReadUsersAccountsForm exception: " + e.toString()); 
+      e.printStackTrace(); 
+    }
+
+    for (int i = 1; i < accounts.size() + 1; i++) {
+      System.out.println(i + ". Número de cuenta: " + accounts.get(i-1));
+    }
+
+    System.out.println();
+    System.out.print("Introduzca el número de cuenta que desea consultar: ");
+    int account = console.getInputInt();
+    double balance = 0;
+    List<Transaction> transactions = new ArrayList<Transaction>();
+
+    try {
+      transactions = stub.getRMIStub().getAccountLastTransactions(documentID, account);
+      balance = stub.getRMIStub().getAccountBalance(documentID, account);
+    } catch (Exception e) {
+      System.err.println("ReadUsersAccountsForm exception: " + e.toString()); 
+      e.printStackTrace(); 
+    }
+
+    console.clearConsole();
+    System.out.println("UCAB ATM (RPC/RMI) - Resumen de cuenta " + account);
+    System.out.println();
+    System.out.println("Balance actual: " + balance);
+    System.out.println();
+
+    System.out.println("Últimas 5 transacciones registradas:");
+
+    for (int i = 1; i < transactions.size() + 1; i++) {
+      System.out.println(i + ". ID(" + transactions.get(i-1).getTransactionID()+ ") Fecha: " + transactions.get(i-1).getTransactionDate() + " [Monto: " + transactions.get(i-1).getTransactionAmount() + "]");
+      System.out.println("--- Tipo: " + transactions.get(i-1).getTransactionType());
+      System.out.println("--- Cuenta origen: " + transactions.get(i-1).getTransactionSource());
+      System.out.println("--- Cuenta destino: " + transactions.get(i-1).getTransactionDestination());
+      System.out.println("--- Descripción: " + transactions.get(i-1).getTransactionDescription());
+      System.out.println();
+    }
+
+    console.stopConsole();
+  }
+
   public void openAccount(){
     if(this.checkDocumentIDForm()){
       if(this.checkMaxAccountsForm()){
@@ -130,6 +188,7 @@ public class Form {
         System.out.println("UCAB ATM (RPC/RMI) - Máximo número de cuentas por usuario");
         System.out.println();
         System.out.println("No se puede agregar una nueva cuenta ya que alcanzó el límite establecido por usuario!");
+        System.out.println();
         console.stopConsole();
       }
     }else{
@@ -148,6 +207,7 @@ public class Form {
         System.out.println("UCAB ATM (RPC/RMI) - Error de registro");
         System.out.println();
         System.out.println("Error al registrar un nuevo usuario, intente nuevamente!");
+        System.out.println();
         console.stopConsole();
       }
     }
