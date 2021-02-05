@@ -2,17 +2,41 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class Console {
-  private Scanner clientInput = new Scanner(System.in);
+  private Scanner clientInputNumbers = new Scanner(System.in);
+  private Scanner clientInputStrings = new Scanner(System.in);
   private Scanner keyboard = new Scanner(System.in);
 
-  public int getInputValue() {
+  public int getInputInt() {
     int option = 0;
 
     try {
-      return option = this.clientInput.nextInt();
+      return option = this.clientInputNumbers.nextInt();
     } catch (Exception e) {
-      this.clientInput.next();
+      this.clientInputNumbers.next();
       return option;
+    }
+  }
+
+  public double getInputDouble() {
+    double value = 0;
+    
+    try {
+      return value = this.clientInputNumbers.nextDouble();
+    } catch (Exception e) {
+      this.clientInputNumbers.next();
+      return value;
+    }
+  }
+
+  public String getInputString() {
+    String value = "";
+
+    try {
+      this.clientInputStrings.useDelimiter("\n");
+      return value = this.clientInputStrings.next();
+    } catch (Exception e) {
+      this.clientInputStrings.next();
+      return value;
     }
   }
 

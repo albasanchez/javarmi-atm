@@ -1,5 +1,6 @@
 public class Menu {
    private Console console = new Console();
+   private Form forms = new Form();
 
    private void openTransactionMenu() {
       boolean outATMTransactions = false;
@@ -17,7 +18,7 @@ public class Menu {
 
         System.out.println();
         System.out.print("(ATM) Indique una de las opciones: ");
-        option = console.getInputValue();
+        option = console.getInputInt();
 
          switch (option) {
             case 0:
@@ -71,7 +72,7 @@ public class Menu {
 
          System.out.println();
          System.out.print("(ATM) Indique una de las opciones: ");
-         option = console.getInputValue();
+         option = console.getInputInt();
 
          switch (option) {
             case 0:
@@ -80,9 +81,7 @@ public class Menu {
                console.stopConsole();
                break;
             case 1:
-               System.out.println("Has seleccionado la opcion 1");
-               System.out.println();
-               console.stopConsole();
+               forms.openAccount();
                break;
             case 2:
                this.openTransactionMenu();
