@@ -33,7 +33,9 @@ public class Console {
 
     try {
       this.clientInputStrings.useDelimiter("\n");
-      return value = this.clientInputStrings.next();
+      value = this.clientInputStrings.next();
+      value = value.replaceAll("\\r|\\n", "");
+      return value;
     } catch (Exception e) {
       this.clientInputStrings.next();
       return value;
