@@ -96,7 +96,7 @@ public class Form {
     double deposit = console.getInputDouble();
     String documentID = client.getDocumentID();
 
-    String response = "";
+    Number response = 0;
 
     try {
       response = stub.getRMIStub().intialDeposit(documentID, deposit);
