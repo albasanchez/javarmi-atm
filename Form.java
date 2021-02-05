@@ -136,6 +136,7 @@ public class Form {
       if(this.registerClientForm()){
         if(this.verifyUserForm()){
           this.intialDepositForm();
+          console.stopConsole();
         }else{
           console.clearConsole();
           System.out.println("UCAB ATM (RPC/RMI) - Error de login");
