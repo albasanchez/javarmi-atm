@@ -35,9 +35,7 @@ public class Menu {
                   forms.readUsersAccountsForm();
                   break;
                case 2:
-                  System.out.println("Has seleccionado la opcion 2");
-                  System.out.println();
-                  console.stopConsole();
+                  forms.depositAccountForm();
                   break;
                case 3:
                   System.out.println("Has seleccionado la opcion 3");

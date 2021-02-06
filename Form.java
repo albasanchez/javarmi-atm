@@ -141,6 +141,7 @@ public class Form {
     System.out.println();
     System.out.print("Introduzca el número de cuenta que desea consultar: ");
     int account = console.getInputInt();
+
     double balance = 0;
     List<Transaction> transactions = new ArrayList<Transaction>();
 
@@ -170,6 +171,125 @@ public class Form {
     }
 
     console.stopConsole();
+  }
+
+  public void depositAccountForm(){
+    console.clearConsole();
+    System.out.println("UCAB ATM (RPC/RMI) - Cuentas del usuario");
+    System.out.println();
+
+    String documentID = client.getDocumentID();
+    List<String> accounts = new ArrayList<String>();
+
+    try {
+      accounts = stub.getRMIStub().getUserAccounts(documentID);
+    } catch (Exception e) {
+      System.err.println("ReadUsersAccountsForm exception: " + e.toString()); 
+      e.printStackTrace(); 
+    }
+
+    for (int i = 1; i < accounts.size() + 1; i++) {
+      System.out.println("--- Número de cuenta: " + accounts.get(i-1));
+    }
+    System.out.println("--- Cuenta de terceros: 1010");
+
+    System.out.println();
+    System.out.print("Introduzca el número de cuenta en el que desea depositar: ");
+    int account = console.getInputInt();
+
+    if(account == 1010){
+      console.clearConsole();
+      System.out.println("UCAB ATM (RPC/RMI) - Depósito en cuenta de terceros");
+      System.out.println();
+      System.out.print("Número de cuenta destino: ");
+      Number destinationAccount = console.getInputInt();
+      System.out.print("Documento de identidad del titular de la cuenta de destino: ");
+      String destinationDocumentID = console.getInputString();
+
+      String destinationUserName = "";
+
+      try {
+        destinationUserName = stub.getRMIStub().getAccountUser(destinationDocumentID, destinationAccount);
+      } catch (Exception e) {
+        System.err.println("DepositAccountForm exception: " + e.toString()); 
+        e.printStackTrace(); 
+      }
+
+      console.clearConsole();
+      System.out.println("UCAB ATM (RPC/RMI) - Verificación de cuenta de terceros");
+      System.out.println();
+
+      int check = 0;
+
+      if(destinationUserName.length() == 0){
+        return;
+      }else{
+        System.out.print("Nombre del titular de la cuenta de destino: " + destinationUserName);
+        System.out.println();
+        System.out.print("Validar (1) / Negar(0) ");
+        check = console.getInputInt();
+      }
+
+      if(check == 1){
+        console.clearConsole();
+        System.out.println("UCAB ATM (RPC/RMI) - Depósito en cuenta " + account);
+        System.out.println();
+        System.out.print("Cantidad que desea depositar: ");
+        double amount = console.getInputDouble();
+        System.out.print("Descripción: ");
+        String description = console.getInputString();
+
+        double balance = 0;
+
+        try {
+          balance = stub.getRMIStub().deposit(destinationDocumentID, destinationAccount, description, amount);
+        } catch (Exception e) {
+          System.err.println("DepositAccountForm exception: " + e.toString()); 
+          e.printStackTrace(); 
+        }
+
+        console.clearConsole();
+        System.out.println("UCAB ATM (RPC/RMI) - Resumen de depósito en cuenta de terceros");
+        System.out.println();
+        System.out.println("Cantidad depositada: " + amount);
+        System.out.println("Balance actual: " + balance);
+        System.out.println("Descripción: " + description);
+        System.out.println("Cuenta de destino: " + destinationAccount);
+        System.out.println("Titular de cuenta de destino: " + destinationUserName);
+        System.out.println();
+      }
+
+      System.out.println();
+      console.stopConsole();
+
+    }else{
+      console.clearConsole();
+      System.out.println("UCAB ATM (RPC/RMI) - Depósito en cuenta " + account);
+      System.out.println();
+      System.out.print("Cantidad que desea depositar: ");
+      double amount = console.getInputDouble();
+      System.out.print("Descripción: ");
+      String description = console.getInputString();
+
+      double balance = 0;
+
+      try {
+        balance = stub.getRMIStub().deposit(documentID, account, description, amount);
+      } catch (Exception e) {
+        System.err.println("DepositAccountForm exception: " + e.toString()); 
+        e.printStackTrace(); 
+      }
+
+      console.clearConsole();
+      System.out.println("UCAB ATM (RPC/RMI) - Resumen de depósito en " + account);
+      System.out.println();
+      System.out.println("Cantidad depositada: " + amount);
+      System.out.println("Balance actual: " + balance);
+      System.out.println("Descripción: " + description);
+      System.out.println();
+
+      console.stopConsole();
+    }
   }
 
   public void openAccount(){
