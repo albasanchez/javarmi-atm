@@ -80,10 +80,11 @@ public class Form {
     System.out.print("Introduzca su password: ");
     String password = console.getInputString();
 
+    String documentID = client.getDocumentID();
     boolean response = false;
 
     try {
-      response = stub.getRMIStub().verifyUser(username, password);
+      response = stub.getRMIStub().verifyUser(documentID, username, password);
     } catch (Exception e) {
       System.err.println("VerifyUserForm exception: " + e.toString()); 
       e.printStackTrace(); 
