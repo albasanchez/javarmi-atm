@@ -4,13 +4,6 @@ public class Client {
   private String username;
   private String password;
 
-  // public Client(String documentID, String name, String username, String password){
-  //   this.documentID = documentID;
-  //   this.name = name;
-  //   this.username = username;
-  //   this.password = password;
-  // }
-
   public void setDocumentID(String documentID){
     this.documentID = documentID;
   }

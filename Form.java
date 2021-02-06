@@ -14,7 +14,7 @@ public class Form {
   }
 
   //[BANNER] Listado de cuentas según el documento de identidad del usuario
-  private void showAccounts(String documentID, boolean hasExtraOption){
+  private void showAccounts(String documentID, boolean hasExtraOption, int lockAccount){
     List<String> accounts = new ArrayList<String>();
     
     try {
@@ -25,7 +25,9 @@ public class Form {
     }
 
     for (int i = 1; i < accounts.size() + 1; i++) {
-      System.out.println(i + ". Número de cuenta: " + accounts.get(i-1));
+      if(Integer.toString(lockAccount) != accounts.get(i-1)){
+        System.out.println(i + ". Número de cuenta: " + accounts.get(i-1));
+      }
     }
 
     if(hasExtraOption){
@@ -180,7 +182,7 @@ public class Form {
 
     String documentID = client.getDocumentID();
 
-    this.showAccounts(documentID, false);
+    this.showAccounts(documentID, false, 0);
 
     System.out.println();
     System.out.print("Introduzca el número de cuenta que desea consultar: ");
@@ -229,7 +231,7 @@ public class Form {
 
     String documentID = client.getDocumentID();
 
-    this.showAccounts(documentID, false);
+    this.showAccounts(documentID, false, 0);
 
     System.out.println();
     System.out.print("Introduzca el número de cuenta en donde se hará el retiro: ");
@@ -287,7 +289,7 @@ public class Form {
 
     String documentID = client.getDocumentID();
 
-    this.showAccounts(documentID, true);
+    this.showAccounts(documentID, true, 0);
 
     System.out.println();
     System.out.print("Introduzca el número de cuenta en el que desea depositar: ");
