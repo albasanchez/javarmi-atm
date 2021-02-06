@@ -4,6 +4,84 @@ public class Form {
   private RMIStub stub = new RMIStub();
   private Client client = new Client();
 
+  //[BANNER] Indicador de cuenta incorrecta
+  private void accountNotMatch(){
+    console.clearConsole();
+    System.out.println("UCAB ATM (RPC/RMI) - Número de cuenta incorrecto");
+    System.out.println();
+    System.out.println("El número de cuenta no concuerda con ninguna de las cuentas indicadas!");
+    System.out.println();
+  }
+
+  //[BANNER] Listado de cuentas según el documento de identidad del usuario
+  private void showAccounts(String documentID, boolean hasExtraOption){
+    List<String> accounts = new ArrayList<String>();
+    
+    try {
+      accounts = stub.getRMIStub().getUserAccounts(documentID);
+    } catch (Exception e) {
+      System.err.println("ShowAccounts exception: " + e.toString()); 
+      e.printStackTrace(); 
+    }
+
+    for (int i = 1; i < accounts.size() + 1; i++) {
+      System.out.println(i + ". Número de cuenta: " + accounts.get(i-1));
+    }
+
+    if(hasExtraOption){
+      System.out.println((accounts.size() + 1) + ". Cuenta de terceros: 1010");
+    }
+  }
+
+  //[VERIFICATION] Verificar balance de cuenta
+  private boolean verifyAccountBalance(String documentID, Number account){
+    double checkBalance = 0;
+
+    try {
+      checkBalance = stub.getRMIStub().getAccountBalance(documentID, account);
+    } catch (Exception e) {
+      System.err.println("VerifyAccountBalance exception: " + e.toString()); 
+      e.printStackTrace(); 
+    }
+
+    if(checkBalance == -1){
+      return false;
+    }else{
+      return true;
+    }
+  }
+
+  //[VERIFICATION] Verificación de usuario registrado a través del documento de identidad
+  private boolean checkDocumentID(){
+    String documentID = client.getDocumentID();
+    boolean response = false;
+
+    try {
+      response = stub.getRMIStub().checkDocumentID(documentID);
+    } catch (Exception e) {
+      System.err.println("CheckDocumentID exception: " + e.toString()); 
+      e.printStackTrace(); 
+    }
+
+    return response;
+  }
+
+  //[VERIFICATION] Verificación de cantidad de cuentas que posee el usuario
+  private boolean checkMaxAccounts(){
+    String documentID = client.getDocumentID();
+    boolean response = false;
+
+    try {
+      response = stub.getRMIStub().checkMaxAccounts(documentID);
+    } catch (Exception e) {
+      System.err.println("checkMaxAccounts exception: " + e.toString()); 
+      e.printStackTrace(); 
+    }
+
+    return response;
+  }
+
+  //[FORM] Obtener el documento de identidad del usuario que ingresa al ATM
   public void getUserDocumentID(){
     console.clearConsole();
     System.out.println("UCAB ATM (RPC/RMI) - Documento de identidad del usuario");
@@ -14,20 +92,7 @@ public class Form {
     client.setDocumentID(documentID);
   }
 
-  private boolean checkDocumentIDForm(){
-    String documentID = client.getDocumentID();
-    boolean response = false;
-
-    try {
-      response = stub.getRMIStub().checkDocumentID(documentID);
-    } catch (Exception e) {
-      System.err.println("CheckDocumentIDForm exception: " + e.toString()); 
-      e.printStackTrace(); 
-    }
-
-    return response;
-  }
-
+  //[FORM] Registro de nuevo usuario a través del ATM
   private boolean registerClientForm(){
     console.clearConsole();
     System.out.println("UCAB ATM (RPC/RMI) - Registro de nuevo usuario");
@@ -55,20 +120,7 @@ public class Form {
     return response;
   }
 
-  private boolean checkMaxAccountsForm(){
-    String documentID = client.getDocumentID();
-    boolean response = false;
-
-    try {
-      response = stub.getRMIStub().checkMaxAccounts(documentID);
-    } catch (Exception e) {
-      System.err.println("CheckMaxAccountsForm exception: " + e.toString()); 
-      e.printStackTrace(); 
-    }
-
-    return response;
-  }
-
+  //[FORM] Inicio de sesión para usuario que ingresó al ATM
   public boolean verifyUserForm(){
     console.clearConsole();
     System.out.println("UCAB ATM (RPC/RMI) - Login");
@@ -93,6 +145,7 @@ public class Form {
     return response;
   }
 
+  //[FORM] Depósito inicial en apertura de cuenta
   private void intialDepositForm(){
     console.clearConsole();
     System.out.println("UCAB ATM (RPC/RMI) - Depósito inicial para nueva cuenta");
@@ -119,79 +172,122 @@ public class Form {
     System.out.println();
   }
 
+  //[FORM] Consulta de cuentas de usuario
   public void readUsersAccountsForm(){
     console.clearConsole();
     System.out.println("UCAB ATM (RPC/RMI) - Cuentas del usuario");
     System.out.println();
 
     String documentID = client.getDocumentID();
-    List<String> accounts = new ArrayList<String>();
 
-    try {
-      accounts = stub.getRMIStub().getUserAccounts(documentID);
-    } catch (Exception e) {
-      System.err.println("ReadUsersAccountsForm exception: " + e.toString()); 
-      e.printStackTrace(); 
-    }
-
-    for (int i = 1; i < accounts.size() + 1; i++) {
-      System.out.println(i + ". Número de cuenta: " + accounts.get(i-1));
-    }
+    this.showAccounts(documentID, false);
 
     System.out.println();
     System.out.print("Introduzca el número de cuenta que desea consultar: ");
     int account = console.getInputInt();
 
-    double balance = 0;
-    List<Transaction> transactions = new ArrayList<Transaction>();
+    if(this.verifyAccountBalance(documentID, account)){
+      double balance = 0;
+      List<Transaction> transactions = new ArrayList<Transaction>();
 
-    try {
-      transactions = stub.getRMIStub().getAccountLastTransactions(documentID, account);
-      balance = stub.getRMIStub().getAccountBalance(documentID, account);
-    } catch (Exception e) {
-      System.err.println("ReadUsersAccountsForm exception: " + e.toString()); 
-      e.printStackTrace(); 
-    }
+      try {
+        transactions = stub.getRMIStub().getAccountLastTransactions(documentID, account);
+        balance = stub.getRMIStub().getAccountBalance(documentID, account);
+      } catch (Exception e) {
+        System.err.println("ReadUsersAccountsForm exception: " + e.toString()); 
+        e.printStackTrace(); 
+      }
 
-    console.clearConsole();
-    System.out.println("UCAB ATM (RPC/RMI) - Resumen de cuenta " + account);
-    System.out.println();
-    System.out.println("Balance actual: " + balance);
-    System.out.println();
-
-    System.out.println("Últimas 5 transacciones registradas:");
-
-    for (int i = 1; i < transactions.size() + 1; i++) {
-      System.out.println(i + ". ID(" + transactions.get(i-1).getTransactionID()+ ") Fecha: " + transactions.get(i-1).getTransactionDate() + " [Monto: " + transactions.get(i-1).getTransactionAmount() + "]");
-      System.out.println("--- Tipo: " + transactions.get(i-1).getTransactionType());
-      System.out.println("--- Cuenta origen: " + transactions.get(i-1).getTransactionSource());
-      System.out.println("--- Cuenta destino: " + transactions.get(i-1).getTransactionDestination());
-      System.out.println("--- Descripción: " + transactions.get(i-1).getTransactionDescription());
+      console.clearConsole();
+      System.out.println("UCAB ATM (RPC/RMI) - Resumen de cuenta " + account);
       System.out.println();
-    }
+      System.out.println("Balance actual: " + balance);
+      System.out.println();
 
+      System.out.println("Últimas 5 transacciones registradas:");
+
+      for (int i = 1; i < transactions.size() + 1; i++) {
+        System.out.println(i + ". ID(" + transactions.get(i-1).getTransactionID()+ ") Fecha: " + transactions.get(i-1).getTransactionDate() + " [Monto: " + transactions.get(i-1).getTransactionAmount() + "]");
+        System.out.println("--- Tipo: " + transactions.get(i-1).getTransactionType());
+        System.out.println("--- Cuenta origen: " + transactions.get(i-1).getTransactionSource());
+        System.out.println("--- Cuenta destino: " + transactions.get(i-1).getTransactionDestination());
+        System.out.println("--- Descripción: " + transactions.get(i-1).getTransactionDescription());
+        System.out.println();
+      }
+    }else{
+      this.accountNotMatch();
+    }
+    
     console.stopConsole();
   }
 
+  //[FORM] Retiro de cuentas a través del ATM
+  public void withdrawalAccountsForm(){
+    console.clearConsole();
+    System.out.println("UCAB ATM (RPC/RMI) - Cuentas del usuario");
+    System.out.println();
+
+    String documentID = client.getDocumentID();
+
+    this.showAccounts(documentID, false);
+
+    System.out.println();
+    System.out.print("Introduzca el número de cuenta en donde se hará el retiro: ");
+    int account = console.getInputInt();
+    
+    double balance = 0;
+
+    try {
+      balance = stub.getRMIStub().getAccountBalance(documentID, account);
+    } catch (Exception e) {
+      System.err.println("WithdrawalAccountsForm exception: " + e.toString()); 
+      e.printStackTrace(); 
+    }
+
+    if(balance == -1) {
+      this.accountNotMatch();
+    } else {
+      console.clearConsole();
+      System.out.println("UCAB ATM (RPC/RMI) - Retiro de cuenta " + account);
+      System.out.println();
+      System.out.print("Introduzca la cantidad a retirar: ");
+      double amount = console.getInputDouble();
+  
+      if (balance - amount > 0) {
+        try {
+          balance = stub.getRMIStub().withdrawal(documentID, account, amount);
+        } catch (Exception e) {
+          System.err.println("WithdrawalAccountsForm exception: " + e.toString()); 
+          e.printStackTrace(); 
+        }
+  
+        console.clearConsole();
+        System.out.println("UCAB ATM (RPC/RMI) - Retiro de cuenta " + account);
+        System.out.println();
+        System.out.println("Balance actual: " + balance);
+        System.out.println("Cantidad retirada: " + amount);
+        System.out.println();
+  
+      } else {
+        console.clearConsole();
+        System.out.println("UCAB ATM (RPC/RMI) - Cantidad a retirar incorrecta");
+        System.out.println();
+        System.out.println("La cantidad a retirar no puede superar el balance de la cuenta!");
+        System.out.println();
+      }
+    }
+    console.stopConsole();
+  }
+
+  //[FORM] Depósito en cuenta a través del ATM
   public void depositAccountForm(){
     console.clearConsole();
     System.out.println("UCAB ATM (RPC/RMI) - Cuentas del usuario");
     System.out.println();
 
     String documentID = client.getDocumentID();
-    List<String> accounts = new ArrayList<String>();
 
-    try {
-      accounts = stub.getRMIStub().getUserAccounts(documentID);
-    } catch (Exception e) {
-      System.err.println("ReadUsersAccountsForm exception: " + e.toString()); 
-      e.printStackTrace(); 
-    }
-
-    for (int i = 1; i < accounts.size() + 1; i++) {
-      System.out.println("--- Número de cuenta: " + accounts.get(i-1));
-    }
-    System.out.println("--- Cuenta de terceros: 1010");
+    this.showAccounts(documentID, true);
 
     System.out.println();
     System.out.print("Introduzca el número de cuenta en el que desea depositar: ");
@@ -215,18 +311,17 @@ public class Form {
         e.printStackTrace(); 
       }
 
-      console.clearConsole();
-      System.out.println("UCAB ATM (RPC/RMI) - Verificación de cuenta de terceros");
-      System.out.println();
-
       int check = 0;
 
       if(destinationUserName.length() == 0){
         return;
       }else{
-        System.out.print("Nombre del titular de la cuenta de destino: " + destinationUserName);
+        console.clearConsole();
+        System.out.println("UCAB ATM (RPC/RMI) - Verificación de cuenta de terceros");
         System.out.println();
-        System.out.print("Validar (1) / Negar(0) ");
+        System.out.println("Nombre del titular de la cuenta de destino: " + destinationUserName);
+        System.out.println();
+        System.out.print("Validar (1) / Negar(0): ");
         check = console.getInputInt();
       }
 
@@ -257,44 +352,49 @@ public class Form {
         System.out.println("Cuenta de destino: " + destinationAccount);
         System.out.println("Titular de cuenta de destino: " + destinationUserName);
         System.out.println();
+      }else{
+        this.accountNotMatch();
       }
 
-      System.out.println();
       console.stopConsole();
-
     }else{
-      console.clearConsole();
-      System.out.println("UCAB ATM (RPC/RMI) - Depósito en cuenta " + account);
-      System.out.println();
-      System.out.print("Cantidad que desea depositar: ");
-      double amount = console.getInputDouble();
-      System.out.print("Descripción: ");
-      String description = console.getInputString();
+      if(this.verifyAccountBalance(documentID, account)){
+        console.clearConsole();
+        System.out.println("UCAB ATM (RPC/RMI) - Depósito en cuenta " + account);
+        System.out.println();
+        System.out.print("Cantidad que desea depositar: ");
+        double amount = console.getInputDouble();
+        System.out.print("Descripción: ");
+        String description = console.getInputString();
 
-      double balance = 0;
+        double balance = 0;
 
-      try {
-        balance = stub.getRMIStub().deposit(documentID, account, description, amount);
-      } catch (Exception e) {
-        System.err.println("DepositAccountForm exception: " + e.toString()); 
-        e.printStackTrace(); 
+        try {
+          balance = stub.getRMIStub().deposit(documentID, account, description, amount);
+        } catch (Exception e) {
+          System.err.println("DepositAccountForm exception: " + e.toString()); 
+          e.printStackTrace(); 
+        }
+
+        console.clearConsole();
+        System.out.println("UCAB ATM (RPC/RMI) - Resumen de depósito en " + account);
+        System.out.println();
+        System.out.println("Cantidad depositada: " + amount);
+        System.out.println("Balance actual: " + balance);
+        System.out.println("Descripción: " + description);
+        System.out.println();
+      }else{
+        this.accountNotMatch();
       }
-
-      console.clearConsole();
-      System.out.println("UCAB ATM (RPC/RMI) - Resumen de depósito en " + account);
-      System.out.println();
-      System.out.println("Cantidad depositada: " + amount);
-      System.out.println("Balance actual: " + balance);
-      System.out.println("Descripción: " + description);
-      System.out.println();
 
       console.stopConsole();
     }
   }
 
+  //[FORM] Apertura de cuenta para usuarios registrados y no registrados
   public void openAccount(){
-    if(this.checkDocumentIDForm()){
-      if(this.checkMaxAccountsForm()){
+    if(this.checkDocumentID()){
+      if(this.checkMaxAccounts()){
         if(this.verifyUserForm()){
           this.intialDepositForm();
           console.stopConsole();
