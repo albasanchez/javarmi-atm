@@ -41,9 +41,7 @@ public class Menu {
                   forms.withdrawalAccountsForm();
                   break;
                case 4:
-                  System.out.println("Has seleccionado la opcion 4");
-                  System.out.println();
-                  console.stopConsole();
+                  forms.transferenceAccountForm();
                   break;
                case 5:
                   System.out.println();

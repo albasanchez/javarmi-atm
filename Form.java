@@ -25,7 +25,7 @@ public class Form {
     }
 
     for (int i = 1; i < accounts.size() + 1; i++) {
-      if(Integer.toString(lockAccount) != accounts.get(i-1)){
+      if(lockAccount != Integer.parseInt(accounts.get(i-1))){
         System.out.println(i + ". Número de cuenta: " + accounts.get(i-1));
       }
     }
@@ -391,6 +391,151 @@ public class Form {
 
       console.stopConsole();
     }
+  }
+
+  //[FORM] Transferencia entre cuentas a través del ATM
+  public void transferenceAccountForm(){
+    console.clearConsole();
+    System.out.println("UCAB ATM (RPC/RMI) - Cuentas del usuario");
+    System.out.println();
+
+    String sourceDocumentID = client.getDocumentID();
+
+    this.showAccounts(sourceDocumentID, false, 0);
+
+    System.out.println();
+    System.out.print("Introduzca el número de cuenta de origen: ");
+    int sourceAccount = console.getInputInt();
+
+    double balance = 0;
+
+    try {
+      balance = stub.getRMIStub().getAccountBalance(sourceDocumentID, sourceAccount);
+    } catch (Exception e) {
+      System.err.println("transferenceAccountForm exception: " + e.toString()); 
+      e.printStackTrace(); 
+    }
+
+    if (balance != -1){
+      console.clearConsole();
+      System.out.println("UCAB ATM (RPC/RMI) - Cuentas del usuario");
+      System.out.println();
+  
+      this.showAccounts(sourceDocumentID, true, sourceAccount);
+  
+      System.out.println();
+      System.out.print("Introduzca el número de cuenta de destino: ");
+      int destinationAccount = console.getInputInt();
+
+      if(destinationAccount == 1010) {
+        console.clearConsole();
+        System.out.println("UCAB ATM (RPC/RMI) - Transferencia a cuenta de terceros");
+        System.out.println();
+        System.out.print("Número de cuenta destino: ");
+        destinationAccount = console.getInputInt();
+        System.out.print("Documento de identidad del titular de la cuenta de destino: ");
+        String destinationDocumentID = console.getInputString();
+  
+        String destinationUserName = "";
+  
+        try {
+          destinationUserName = stub.getRMIStub().getAccountUser(destinationDocumentID, destinationAccount);
+        } catch (Exception e) {
+          System.err.println("transferenceAccountForm exception: " + e.toString()); 
+          e.printStackTrace(); 
+        }
+  
+        int check = 0;
+  
+        if(destinationUserName.length() == 0){
+          return;
+        }else{
+          console.clearConsole();
+          System.out.println("UCAB ATM (RPC/RMI) - Verificación de cuenta de terceros");
+          System.out.println();
+          System.out.println("Nombre del titular de la cuenta de destino: " + destinationUserName);
+          System.out.println();
+          System.out.print("Validar (1) / Negar(0): ");
+          check = console.getInputInt();
+        }
+  
+        if(check == 1){
+          console.clearConsole();
+          System.out.println("UCAB ATM (RPC/RMI) - Transferencia en cuenta " + destinationAccount);
+          System.out.println();
+          System.out.print("Cantidad que desea transferir: ");
+          double amount = console.getInputDouble();
+          System.out.print("Descripción: ");
+          String description = console.getInputString();
+  
+          if (balance - amount > 0) {
+            try {
+              balance = stub.getRMIStub().transference(sourceDocumentID, destinationDocumentID, sourceAccount, destinationAccount, description, amount);
+            } catch (Exception e) {
+              System.err.println("transferenceAccountForm exception: " + e.toString()); 
+              e.printStackTrace(); 
+            }
+    
+            console.clearConsole();
+            System.out.println("UCAB ATM (RPC/RMI) - Resumen de transferencia en cuenta de terceros");
+            System.out.println();
+            System.out.println("Cantidad transferida: " + amount);
+            System.out.println("Balance actual: " + balance);
+            System.out.println("Descripción: " + description);
+            System.out.println("Cuenta de destino: " + destinationAccount);
+            System.out.println("Titular de cuenta de destino: " + destinationUserName);
+            System.out.println();
+          } else {
+            console.clearConsole();
+            System.out.println("UCAB ATM (RPC/RMI) - Cantidad a transferir incorrecta");
+            System.out.println();
+            System.out.println("La cantidad a transferir no puede superar el balance de la cuenta!");
+            System.out.println();
+          }
+        }else{
+          return;
+        }
+      } else {
+        if(this.verifyAccountBalance(sourceDocumentID, destinationAccount)) {
+          console.clearConsole();
+          System.out.println("UCAB ATM (RPC/RMI) - Transferencia a cuenta " + destinationAccount);
+          System.out.println();
+          System.out.print("Cantidad que desea transferir: ");
+          double amount = console.getInputDouble();
+          System.out.print("Descripción: ");
+          String description = console.getInputString();
+
+          if (balance - amount > 0) {
+            try {
+              balance = stub.getRMIStub().transference(sourceDocumentID, sourceDocumentID, sourceAccount, destinationAccount, description, amount);
+            } catch (Exception e) {
+              System.err.println("transferenceAccountForm exception: " + e.toString()); 
+              e.printStackTrace(); 
+            }
+    
+            console.clearConsole();
+            System.out.println("UCAB ATM (RPC/RMI) - Resumen de transferencia a " + destinationAccount);
+            System.out.println();
+            System.out.println("Cantidad transferida: " + amount);
+            System.out.println("Balance actual: " + balance);
+            System.out.println("Descripción: " + description);
+            System.out.println();
+          } else {
+            console.clearConsole();
+            System.out.println("UCAB ATM (RPC/RMI) - Cantidad a transferir incorrecta");
+            System.out.println();
+            System.out.println("La cantidad a transferir no puede superar el balance de la cuenta!");
+            System.out.println();
+          }
+        } else {
+          this.accountNotMatch();
+        }
+      }
+    } else {
+      this.accountNotMatch();
+    }
+
+    console.stopConsole();
   }
 
   //[FORM] Apertura de cuenta para usuarios registrados y no registrados
