@@ -172,6 +172,75 @@ public class Form {
     console.stopConsole();
   }
 
+  public void withdrawalAccountsForm(){
+    console.clearConsole();
+    System.out.println("UCAB ATM (RPC/RMI) - Cuentas del usuario");
+    System.out.println();
+
+    String documentID = client.getDocumentID();
+    List<String> accounts = new ArrayList<String>();
+
+    try {
+      accounts = stub.getRMIStub().getUserAccounts(documentID);
+    } catch (Exception e) {
+      System.err.println("withdrawalAccountsForm exception: " + e.toString()); 
+      e.printStackTrace(); 
+    }
+
+    for (int i = 1; i < accounts.size() + 1; i++) {
+      System.out.println(i + ". Número de cuenta: " + accounts.get(i-1));
+    }
+
+    System.out.println();
+    System.out.print("Introduzca el número de cuenta en donde se hará el retiro: ");
+    int account = console.getInputInt();
+    double balance = 0;
+
+    try {
+      balance = stub.getRMIStub().getAccountBalance(documentID, account);
+    } catch (Exception e) {
+      System.err.println("withdrawalAccountsForm exception: " + e.toString()); 
+      e.printStackTrace(); 
+    }
+
+    if(balance == -1) {
+      console.clearConsole();
+      System.out.println("UCAB ATM (RPC/RMI) - Número de cuenta incorrecto");
+      System.out.println();
+      System.out.println("El número de cuenta no concuerda con ninguna de las cuentas mostradas");
+      System.out.println();
+      console.stopConsole();
+    } else {
+      System.out.println();
+      System.out.print("Introduzca la cantidad a retirar: ");
+      double amount = console.getInputDouble();
+  
+      if (balance - amount > 0) {
+        try {
+          balance = stub.getRMIStub().withdrawal(documentID, account, amount);
+        } catch (Exception e) {
+          System.err.println("withdrawalAccountsForm exception: " + e.toString()); 
+          e.printStackTrace(); 
+        }
+  
+        console.clearConsole();
+        System.out.println("UCAB ATM (RPC/RMI) - Retiro de cuenta " + account);
+        System.out.println();
+        System.out.println("Balance actual: " + balance);
+        System.out.println();
+  
+      } else {
+        console.clearConsole();
+        System.out.println("UCAB ATM (RPC/RMI) - Cantidad a retirar incorrecta");
+        System.out.println();
+        System.out.println("La cantidad a retirar no puede superar al balance de la cuenta");
+        System.out.println();
+      }
+  
+      console.stopConsole();
+    }
+  }
+
   public void openAccount(){
     if(this.checkDocumentIDForm()){
       if(this.checkMaxAccountsForm()){
