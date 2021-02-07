@@ -13,6 +13,15 @@ public class Form {
     System.out.println();
   }
 
+  //[BANNER] Error en trasnsacción
+  private void transactionError(){
+    console.clearConsole();
+    System.out.println("UCAB ATM (RPC/RMI) - Error en la transacción");
+    System.out.println();
+    System.out.println("Datos de formulario inválidos!");
+    System.out.println();
+  }
+
   //[BANNER] Listado de cuentas según el documento de identidad del usuario
   private void showAccounts(String documentID, boolean hasExtraOption, int lockAccount){
     List<String> accounts = new ArrayList<String>();
@@ -157,21 +166,25 @@ public class Form {
     double deposit = console.getInputDouble();
     String documentID = client.getDocumentID();
 
-    Number response = 0;
+    if(deposit == 0){
+      this.transactionError();
+    }else{
+      Number response = 0;
 
-    try {
-      response = stub.getRMIStub().intialDeposit(documentID, deposit);
-    } catch (Exception e) {
-      System.err.println("IntialDepositForm exception: " + e.toString()); 
-      e.printStackTrace(); 
+      try {
+        response = stub.getRMIStub().intialDeposit(documentID, deposit);
+      } catch (Exception e) {
+        System.err.println("IntialDepositForm exception: " + e.toString()); 
+        e.printStackTrace(); 
+      }
+
+      console.clearConsole();
+      System.out.println("UCAB ATM (RPC/RMI) - Resumen de apertura de cuenta");
+      System.out.println();
+      System.out.println("Número de cuenta: " + response);
+      System.out.println("Balance actual: " + deposit);
+      System.out.println();
     }
-
-    console.clearConsole();
-    System.out.println("UCAB ATM (RPC/RMI) - Resumen de apertura de cuenta");
-    System.out.println();
-    System.out.println("Número de cuenta: " + response);
-    System.out.println("Balance actual: " + deposit);
-    System.out.println();
   }
 
   //[FORM] Consulta de cuentas de usuario
@@ -254,28 +267,32 @@ public class Form {
       System.out.println();
       System.out.print("Introduzca la cantidad a retirar: ");
       double amount = console.getInputDouble();
-  
-      if (balance - amount > 0) {
-        try {
-          balance = stub.getRMIStub().withdrawal(documentID, account, amount);
-        } catch (Exception e) {
-          System.err.println("WithdrawalAccountsForm exception: " + e.toString()); 
-          e.printStackTrace(); 
+
+      if(amount == 0){
+        this.transactionError();
+      }else{
+        if (balance - amount > 0) {
+          try {
+            balance = stub.getRMIStub().withdrawal(documentID, account, amount);
+          } catch (Exception e) {
+            System.err.println("WithdrawalAccountsForm exception: " + e.toString()); 
+            e.printStackTrace(); 
+          }
+    
+          console.clearConsole();
+          System.out.println("UCAB ATM (RPC/RMI) - Retiro de cuenta " + account);
+          System.out.println();
+          System.out.println("Balance actual: " + balance);
+          System.out.println("Cantidad retirada: " + amount);
+          System.out.println();
+    
+        } else {
+          console.clearConsole();
+          System.out.println("UCAB ATM (RPC/RMI) - Cantidad a retirar incorrecta");
+          System.out.println();
+          System.out.println("La cantidad a retirar no puede superar el balance de la cuenta!");
+          System.out.println();
         }
-  
-        console.clearConsole();
-        System.out.println("UCAB ATM (RPC/RMI) - Retiro de cuenta " + account);
-        System.out.println();
-        System.out.println("Balance actual: " + balance);
-        System.out.println("Cantidad retirada: " + amount);
-        System.out.println();
-  
-      } else {
-        console.clearConsole();
-        System.out.println("UCAB ATM (RPC/RMI) - Cantidad a retirar incorrecta");
-        System.out.println();
-        System.out.println("La cantidad a retirar no puede superar el balance de la cuenta!");
-        System.out.println();
       }
     }
     console.stopConsole();
@@ -336,24 +353,28 @@ public class Form {
         System.out.print("Descripción: ");
         String description = console.getInputString();
 
-        double balance = 0;
+        if(amount == 0){
+          this.transactionError();
+        }else{
+          double balance = 0;
 
-        try {
-          balance = stub.getRMIStub().deposit(destinationDocumentID, destinationAccount, description, amount);
-        } catch (Exception e) {
-          System.err.println("DepositAccountForm exception: " + e.toString()); 
-          e.printStackTrace(); 
+          try {
+            balance = stub.getRMIStub().deposit(destinationDocumentID, destinationAccount, description, amount);
+          } catch (Exception e) {
+            System.err.println("DepositAccountForm exception: " + e.toString()); 
+            e.printStackTrace(); 
+          }
+
+          console.clearConsole();
+          System.out.println("UCAB ATM (RPC/RMI) - Resumen de depósito en cuenta de terceros");
+          System.out.println();
+          System.out.println("Cantidad depositada: " + amount);
+          System.out.println("Balance actual: " + balance);
+          System.out.println("Descripción: " + description);
+          System.out.println("Cuenta de destino: " + destinationAccount);
+          System.out.println("Titular de cuenta de destino: " + destinationUserName);
+          System.out.println();          
         }
-
-        console.clearConsole();
-        System.out.println("UCAB ATM (RPC/RMI) - Resumen de depósito en cuenta de terceros");
-        System.out.println();
-        System.out.println("Cantidad depositada: " + amount);
-        System.out.println("Balance actual: " + balance);
-        System.out.println("Descripción: " + description);
-        System.out.println("Cuenta de destino: " + destinationAccount);
-        System.out.println("Titular de cuenta de destino: " + destinationUserName);
-        System.out.println();
       }else{
         this.accountNotMatch();
       }
@@ -369,22 +390,26 @@ public class Form {
         System.out.print("Descripción: ");
         String description = console.getInputString();
 
-        double balance = 0;
+        if(amount == 0){
+          this.transactionError();
+        }else{
+          double balance = 0;
 
-        try {
-          balance = stub.getRMIStub().deposit(documentID, account, description, amount);
-        } catch (Exception e) {
-          System.err.println("DepositAccountForm exception: " + e.toString()); 
-          e.printStackTrace(); 
+          try {
+            balance = stub.getRMIStub().deposit(documentID, account, description, amount);
+          } catch (Exception e) {
+            System.err.println("DepositAccountForm exception: " + e.toString()); 
+            e.printStackTrace(); 
+          }
+
+          console.clearConsole();
+          System.out.println("UCAB ATM (RPC/RMI) - Resumen de depósito en " + account);
+          System.out.println();
+          System.out.println("Cantidad depositada: " + amount);
+          System.out.println("Balance actual: " + balance);
+          System.out.println("Descripción: " + description);
+          System.out.println();
         }
-
-        console.clearConsole();
-        System.out.println("UCAB ATM (RPC/RMI) - Resumen de depósito en " + account);
-        System.out.println();
-        System.out.println("Cantidad depositada: " + amount);
-        System.out.println("Balance actual: " + balance);
-        System.out.println("Descripción: " + description);
-        System.out.println();
       }else{
         this.accountNotMatch();
       }
@@ -441,7 +466,7 @@ public class Form {
         try {
           destinationUserName = stub.getRMIStub().getAccountUser(destinationDocumentID, destinationAccount);
         } catch (Exception e) {
-          System.err.println("transferenceAccountForm exception: " + e.toString()); 
+          System.err.println("TransferenceAccountForm exception: " + e.toString()); 
           e.printStackTrace(); 
         }
   
@@ -467,30 +492,34 @@ public class Form {
           double amount = console.getInputDouble();
           System.out.print("Descripción: ");
           String description = console.getInputString();
-  
-          if (balance - amount > 0) {
-            try {
-              balance = stub.getRMIStub().transference(sourceDocumentID, destinationDocumentID, sourceAccount, destinationAccount, description, amount);
-            } catch (Exception e) {
-              System.err.println("transferenceAccountForm exception: " + e.toString()); 
-              e.printStackTrace(); 
+
+          if(amount == 0){
+            this.transactionError();
+          }else{
+            if (balance - amount > 0) {
+              try {
+                balance = stub.getRMIStub().transference(sourceDocumentID, destinationDocumentID, sourceAccount, destinationAccount, description, amount);
+              } catch (Exception e) {
+                System.err.println("transferenceAccountForm exception: " + e.toString()); 
+                e.printStackTrace(); 
+              }
+      
+              console.clearConsole();
+              System.out.println("UCAB ATM (RPC/RMI) - Resumen de transferencia en cuenta de terceros");
+              System.out.println();
+              System.out.println("Cantidad transferida: " + amount);
+              System.out.println("Balance actual: " + balance);
+              System.out.println("Descripción: " + description);
+              System.out.println("Cuenta de destino: " + destinationAccount);
+              System.out.println("Titular de cuenta de destino: " + destinationUserName);
+              System.out.println();
+            } else {
+              console.clearConsole();
+              System.out.println("UCAB ATM (RPC/RMI) - Cantidad a transferir incorrecta");
+              System.out.println();
+              System.out.println("La cantidad a transferir no puede superar el balance de la cuenta!");
+              System.out.println();
             }
-    
-            console.clearConsole();
-            System.out.println("UCAB ATM (RPC/RMI) - Resumen de transferencia en cuenta de terceros");
-            System.out.println();
-            System.out.println("Cantidad transferida: " + amount);
-            System.out.println("Balance actual: " + balance);
-            System.out.println("Descripción: " + description);
-            System.out.println("Cuenta de destino: " + destinationAccount);
-            System.out.println("Titular de cuenta de destino: " + destinationUserName);
-            System.out.println();
-          } else {
-            console.clearConsole();
-            System.out.println("UCAB ATM (RPC/RMI) - Cantidad a transferir incorrecta");
-            System.out.println();
-            System.out.println("La cantidad a transferir no puede superar el balance de la cuenta!");
-            System.out.println();
           }
         }else{
           return;
@@ -505,27 +534,31 @@ public class Form {
           System.out.print("Descripción: ");
           String description = console.getInputString();
 
-          if (balance - amount > 0) {
-            try {
-              balance = stub.getRMIStub().transference(sourceDocumentID, sourceDocumentID, sourceAccount, destinationAccount, description, amount);
-            } catch (Exception e) {
-              System.err.println("transferenceAccountForm exception: " + e.toString()); 
-              e.printStackTrace(); 
+          if(amount == 0){
+            this.transactionError();
+          }else{
+            if (balance - amount > 0) {
+              try {
+                balance = stub.getRMIStub().transference(sourceDocumentID, sourceDocumentID, sourceAccount, destinationAccount, description, amount);
+              } catch (Exception e) {
+                System.err.println("transferenceAccountForm exception: " + e.toString()); 
+                e.printStackTrace(); 
+              }
+      
+              console.clearConsole();
+              System.out.println("UCAB ATM (RPC/RMI) - Resumen de transferencia a " + destinationAccount);
+              System.out.println();
+              System.out.println("Cantidad transferida: " + amount);
+              System.out.println("Balance actual: " + balance);
+              System.out.println("Descripción: " + description);
+              System.out.println();
+            } else {
+              console.clearConsole();
+              System.out.println("UCAB ATM (RPC/RMI) - Cantidad a transferir incorrecta");
+              System.out.println();
+              System.out.println("La cantidad a transferir no puede superar el balance de la cuenta!");
+              System.out.println();
             }
-    
-            console.clearConsole();
-            System.out.println("UCAB ATM (RPC/RMI) - Resumen de transferencia a " + destinationAccount);
-            System.out.println();
-            System.out.println("Cantidad transferida: " + amount);
-            System.out.println("Balance actual: " + balance);
-            System.out.println("Descripción: " + description);
-            System.out.println();
-          } else {
-            console.clearConsole();
-            System.out.println("UCAB ATM (RPC/RMI) - Cantidad a transferir incorrecta");
-            System.out.println();
-            System.out.println("La cantidad a transferir no puede superar el balance de la cuenta!");
-            System.out.println();
           }
         } else {
           this.accountNotMatch();
